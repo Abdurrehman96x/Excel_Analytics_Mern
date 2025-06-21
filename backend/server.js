@@ -5,6 +5,9 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const authRoutes = require('./routes/authRoutes');
+const adminRoutes = require('./routes/admin');
+
+
 
 dotenv.config();
 const app = express();
@@ -14,7 +17,7 @@ app.use(cors());
 app.use(express.json()); // Parse JSON bodies
 
 app.use('/api/auth', authRoutes);
-
+app.use('/api/admin', adminRoutes);
 
 // Sample route
 app.get('/api/ping', (req, res) => {

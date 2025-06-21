@@ -1,6 +1,7 @@
 import AuthForm from '../components/AuthForm';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -11,7 +12,7 @@ const RegisterPage = () => {
       alert('Registered successfully! Please login.');
       navigate('/login');
     } catch (err) {
-      alert('Registration failed.');
+      toast.error('Registration failed.');
     }
   };
 

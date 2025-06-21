@@ -11,10 +11,15 @@ const LoginPage = () => {
       const res = await axios.post('http://localhost:5000/api/auth/login', { email, password });
       localStorage.setItem('token', res.data.token);
       localStorage.setItem("userName", res.data.user.name);
+      localStorage.setItem("userRole", res.data.user.role);
 
       toast.success(`Welcome, ${res.data.user.name}! 🎉`);
 
-      navigate('/dashboard');
+      if (res.data.user.role === 'admin') {
+      navigate('/admin'); // 👈 admin route
+    } else {
+      navigate('/dashboard'); // 👈 regular user route
+    }
     } catch (err) {
       alert('Invalid login credentials');
     }
