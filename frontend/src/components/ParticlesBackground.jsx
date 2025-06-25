@@ -1,6 +1,6 @@
-import { loadFull } from "tsparticles";
 import { useCallback } from "react";
 import Particles from "react-tsparticles";
+import { loadFull } from "tsparticles";
 
 const ParticlesBackground = () => {
   const particlesInit = useCallback(async (engine) => {
@@ -8,27 +8,32 @@ const ParticlesBackground = () => {
   }, []);
 
   return (
-    <Particles
-      id="tsparticles"
-      init={particlesInit}
-      className="absolute inset-0 -z-10"
-      options={{
-        fullScreen: false,
-        background: {
-          color: {
-            value: "transparent",
+    <div className="absolute inset-0 z-10">
+      <Particles
+        id="tsparticles"
+        init={particlesInit}
+        options={{
+          fullScreen: { enable: false },
+          background: { color: { value: "transparent" } },
+          particles: {
+            number: { value: 40 },
+            color: { value: "#ffffff" },
+            shape: { type: "circle" },
+            opacity: {
+              value: 0.3,
+              anim: { enable: true, speed: 1, opacity_min: 0.1, sync: false }
+            },
+            size: { value: 2, random: true },
+            move: { enable: true, speed: 0.3 }
           },
-        },
-        particles: {
-          color: { value: "#ffffff" },
-          links: { enable: true, color: "#ffffff", distance: 100 },
-          move: { enable: true, speed: 1 },
-          size: { value: 2 },
-          opacity: { value: 0.5 },
-          number: { value: 60 },
-        },
-      }}
-    />
+          interactivity: {
+            events: { onHover: { enable: true, mode: "repulse" } },
+            modes: { repulse: { distance: 100 } }
+          },
+          detectRetina: true
+        }}
+      />
+    </div>
   );
 };
 

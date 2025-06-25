@@ -18,6 +18,7 @@ app.use(express.json()); // Parse JSON bodies
 
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/upload', require('./routes/upload'));
 
 // Sample route
 app.get('/api/ping', (req, res) => {
