@@ -6,6 +6,7 @@ const uploadSchema = new mongoose.Schema({
   analysisSummary: String,
   rawData: [mongoose.Schema.Types.Mixed], // the actual Excel data
   createdAt: { type: Date, default: Date.now },
+  size: String,
 });
 
 module.exports = mongoose.model("Upload", uploadSchema);

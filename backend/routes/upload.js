@@ -22,6 +22,7 @@ router.post("/", verifyToken, upload.single("file"), async (req, res) => {
       fileName: req.file.originalname,
       rawData: data, // optional: limit/transform if too large
       analysisSummary: summary,
+      size: (req.file.size / 1024).toFixed(1) + " KB",
     });
 
     await newUpload.save();
@@ -32,5 +33,16 @@ router.post("/", verifyToken, upload.single("file"), async (req, res) => {
     res.status(500).json({ msg: "Failed to process Excel file" });
   }
 });
+
+router.get("/history", verifyToken, async (req, res) => {
+  try {
+    const uploads = await Upload.find({ user: req.user.id }).sort({ createdAt: -1 });
+    res.json(uploads);
+  } catch (error) {
+    console.error("Error fetching upload history:", error);
+    res.status(500).json({ msg: "Failed to fetch upload history" });
+  }
+});
+
 
 module.exports = router;

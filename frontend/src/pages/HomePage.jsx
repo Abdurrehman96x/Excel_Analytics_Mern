@@ -1,11 +1,10 @@
-import { Link } from 'react-router-dom';
-import ThemeToggle from '../components/ThemeToggle';
-import ParticlesBackground from '../components/ParticlesBackground'; // ✅ import here
+import { Link } from "react-router-dom";
+import ThemeToggle from "../components/ThemeToggle";
+import ParticlesBackground from "../components/ParticlesBackground"; // ✅ import here
 
 const HomePage = () => {
   return (
     <div className="relative min-h-screen overflow-hidden dark:text-white text-gray-900 transition-colors duration-300">
-
       {/* ✅ Particle Background */}
       <ParticlesBackground />
 
@@ -19,11 +18,17 @@ const HomePage = () => {
         </div>
 
         <div className="max-w-3xl text-center space-y-6">
-          <h1 className="text-5xl font-extrabold leading-tight animate-fade-in">
-            Excel Analytics Platform 📊
+          <img
+            src="/assets/excel_analytics_logo.png"
+            alt="Excel Analytics Logo"
+            className="w-36 h-36 sm:w-40 sm:h-40 mx-auto  drop-shadow-lg"
+          />
+          <h1 className="text-4xl sm:text-5xl font-extrabold leading-tight">
+            Excel Analytics Platform
           </h1>
           <p className="text-lg text-gray-700 dark:text-gray-300 animate-fade-in delay-200">
-            Upload Excel sheets. Visualize smart charts. Make data-driven decisions.
+            Upload Excel sheets. Visualize smart charts. Make data-driven
+            decisions.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in delay-300">
             <Link
