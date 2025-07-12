@@ -5,45 +5,68 @@ import {
   Cell, XAxis, YAxis, Tooltip, ResponsiveContainer
 } from "recharts";
 import domtoimage from "dom-to-image-more";
+import html2canvas from "html2canvas";
 import { saveAs } from "file-saver";
 import Plot from "react-plotly.js";
 import Plotly from "plotly.js-dist-min";
+import { toast } from "react-hot-toast";
 
 const COLORS = ["#845ef7", "#5c7cfa", "#7950f2", "#9775fa", "#7048e8"];
 
 export default function ChartConfigurator({ data }) {
-  /* ─────────────────────────── state ────────────────────────── */
-  const headers      = Object.keys(data[0] || {});
-  const numericCols  = headers.filter(h => typeof data[0][h] === "number");
+  /* ───────────────────  basic lists ─────────────────── */
+  const headers     = Object.keys(data[0] || {});
+  const numericCols = headers.filter(
+    h => typeof data[0][h] === "number"
+  );
+
+  /* ───────────────────  state  ──────────────────────── */
   const [xKey, setXKey] = useState(headers[0]);
   const [yKey, setYKey] = useState(numericCols[0] || headers[0]);
   const [tab,  setTab]  = useState("Bar");
 
-  /* ───────────────  ref for download target  ──────────────── */
-  const chartRef = useRef(null);
+  /* ───────────────────  refs  ───────────────────────── */
+  const svgWrapRef  = useRef(null);   // wrapper for Recharts
+  const plotRef     = useRef(null);   // react‑plotly ref
 
-  /* ──────────────────  Download handler  ──────────────────── */
+  /* ───────────────────  download  ───────────────────── */
   const downloadPNG = async () => {
-    /* ——— Plotly 3‑D path ——— */
-    if (tab === "3D Column" || tab === "3D Donut") {
-      const plotNode = chartRef.current?.querySelector(".js-plotly-plot");
-      if (!plotNode) return;
-      Plotly.downloadImage(plotNode, {
-        format: "png",
-        filename: `${yKey}_by_${xKey}`,
-        width: 900,
-        height: 600,
-      });
-      return;
+    try {
+      /* ---- Plotly path ---- */
+      if (tab.startsWith("3D")) {
+        if (!plotRef.current) throw new Error("No Plotly ref");
+        await Plotly.downloadImage(plotRef.current, {
+          format: "png",
+          filename: `${yKey}_by_${xKey}`,
+          width: 900,
+          height: 600,
+        });
+        toast.success("Chart saved!");
+        return;
+      }
+
+      /* ---- Recharts SVG path ---- */
+      const svg = svgWrapRef.current?.querySelector("svg");
+      if (!svg) throw new Error("SVG not found");
+      const blob = await domtoimage.toBlob(svg, { bgcolor: "#ffffff" });
+      saveAs(blob, `${yKey}_by_${xKey}.png`);
+      toast.success("Chart saved!");
+    } catch (err) {
+      /* ---- fallback to html2canvas (handles CORS/foreignObject) ---- */
+      try {
+        const canvas = await html2canvas(svgWrapRef.current);
+        canvas.toBlob((blob) => {
+          if (blob) saveAs(blob, `${yKey}_by_${xKey}.png`);
+          toast.success("Chart saved!");
+        });
+      } catch (e) {
+        console.error("Export failed:", e);
+        toast.error("Unable to export chart 😥");
+      }
     }
-    /* ——— Recharts SVG path ——— */
-    const svgNode = chartRef.current?.querySelector("svg");
-    if (!svgNode) return;
-    const blob = await domtoimage.toBlob(svgNode, { bgcolor: "white" });
-    saveAs(blob, `${yKey}_by_${xKey}.png`);
   };
 
-  /* ──────────────────  Tab button helper  ─────────────────── */
+  /* ───────────────────  tab helper  ─────────────────── */
   const tabBtn = (name) => (
     <button
       key={name}
@@ -57,9 +80,9 @@ export default function ChartConfigurator({ data }) {
     </button>
   );
 
-  /* ─────────────────────  2‑D charts  ─────────────────────── */
+  /* ─────────────────── 2‑D charts  ─────────────────── */
   const render2D = () => {
-    if (tab==="Bar")
+    if (tab === "Bar")
       return (
         <ResponsiveContainer width="100%" height={350}>
           <BarChart data={data}>
@@ -70,7 +93,8 @@ export default function ChartConfigurator({ data }) {
           </BarChart>
         </ResponsiveContainer>
       );
-    if (tab==="Line")
+
+    if (tab === "Line")
       return (
         <ResponsiveContainer width="100%" height={350}>
           <LineChart data={data}>
@@ -81,7 +105,8 @@ export default function ChartConfigurator({ data }) {
           </LineChart>
         </ResponsiveContainer>
       );
-    if (tab==="Pie" || tab==="Donut")
+
+    if (tab === "Pie" || tab === "Donut")
       return (
         <ResponsiveContainer width="100%" height={350}>
           <PieChart>
@@ -89,7 +114,7 @@ export default function ChartConfigurator({ data }) {
               data={data}
               dataKey={yKey}
               nameKey={xKey}
-              innerRadius={tab==="Donut" ? 60 : 0}
+              innerRadius={tab === "Donut" ? 60 : 0}
               outerRadius={110}
               label
             >
@@ -103,17 +128,20 @@ export default function ChartConfigurator({ data }) {
       );
   };
 
-  /* ─────────────────────  3‑D charts  ─────────────────────── */
+  /* ─────────────────── 3‑D charts  ─────────────────── */
   const render3D = () => {
-    if (tab==="3D Column")
+    if (tab === "3D Column")
       return (
         <Plot
-          data={[{
-            type: "bar",
-            x: data.map(d => d[xKey]),
-            y: data.map(d => d[yKey]),
-            marker: { color: COLORS[0] },
-          }]}
+          ref={plotRef}
+          data={[
+            {
+              type: "bar",
+              x: data.map(d => d[xKey]),
+              y: data.map(d => d[yKey]),
+              marker: { color: COLORS[0] },
+            },
+          ]}
           layout={{
             height: 400,
             scene: { zaxis: { visible: false } },
@@ -122,24 +150,29 @@ export default function ChartConfigurator({ data }) {
           style={{ width: "100%" }}
         />
       );
-    if (tab==="3D Donut")
+
+    if (tab === "3D Donut")
       return (
         <Plot
-          data={[{
-            type: "pie",
-            labels: data.map(d => d[xKey]),
-            values: data.map(d => d[yKey]),
-            hole: 0.5,
-          }]}
+          ref={plotRef}
+          data={[
+            {
+              type: "pie",
+              labels: data.map(d => d[xKey]),
+              values: data.map(d => d[yKey]),
+              hole: 0.5,
+            },
+          ]}
           layout={{ height: 400, margin: { t: 30, b: 20 } }}
           style={{ width: "100%" }}
         />
       );
   };
 
-  /* ─────────────────────────── UI ─────────────────────────── */
+  /* ───────────────────────  UI  ─────────────────────── */
   return (
     <div className="bg-white dark:bg-slate-800 rounded-xl shadow p-6 space-y-6">
+      {/* Config header */}
       <h3 className="text-xl font-bold">Chart Configuration</h3>
 
       {/* Axis selectors */}
@@ -166,7 +199,7 @@ export default function ChartConfigurator({ data }) {
         </div>
       </div>
 
-      {/* Tabs + Download button */}
+      {/* Tabs + download */}
       <div className="flex flex-wrap gap-1 mt-6">
         {["Bar","Line","Pie","Donut","3D Column","3D Donut"].map(tabBtn)}
         <button
@@ -178,7 +211,7 @@ export default function ChartConfigurator({ data }) {
       </div>
 
       {/* Chart output */}
-      <div ref={chartRef} className="mt-6">
+      <div ref={svgWrapRef} className="mt-6">
         {["Bar","Line","Pie","Donut"].includes(tab) ? render2D() : render3D()}
       </div>
     </div>
