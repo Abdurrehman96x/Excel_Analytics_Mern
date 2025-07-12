@@ -1,4 +1,4 @@
-// src/components/ChartConfigurator.jsx
+// src/components/ChartConfigurator.jsx (Three.js version)
 import { useState, useRef } from "react";
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie,
@@ -7,80 +7,121 @@ import {
 import domtoimage from "dom-to-image-more";
 import html2canvas from "html2canvas";
 import { saveAs } from "file-saver";
-import Plot from "react-plotly.js";
-import Plotly from "plotly.js-dist-min";
 import { toast } from "react-hot-toast";
+
+// Three‑js imports
+import { Canvas } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
 
 const COLORS = ["#845ef7", "#5c7cfa", "#7950f2", "#9775fa", "#7048e8"];
 
-export default function ChartConfigurator({ data }) {
-  /* ───────────────────  basic lists ─────────────────── */
-  const headers     = Object.keys(data[0] || {});
-  const numericCols = headers.filter(
-    h => typeof data[0][h] === "number"
+/* ──────────────────────────────────────────────────────────────── */
+/*  3‑D chart helpers                                              */
+/* ──────────────────────────────────────────────────────────────── */
+const ThreeBarChart = ({ data, xKey, yKey }) => {
+  const gap = 1.2;
+  const barW = 0.8;
+  return (
+    <Canvas orthographic camera={{ zoom: 60, position: [0, 10, 20] }}>
+      <ambientLight intensity={0.7} />
+      <directionalLight position={[10, 10, 5]} intensity={0.6} />
+      <OrbitControls makeDefault />
+      {data.map((d, i) => (
+        <mesh key={i} position={[i * gap, d[yKey] / 2, 0]} scale={[barW, d[yKey], barW]}>
+          <boxGeometry />
+          <meshStandardMaterial color={COLORS[i % COLORS.length]} />
+        </mesh>
+      ))}
+    </Canvas>
   );
+};
 
-  /* ───────────────────  state  ──────────────────────── */
+const ThreeDonutChart = ({ data, xKey, yKey }) => {
+  const total = data.reduce((s, d) => s + d[yKey], 0);
+  let start = 0;
+  return (
+    <Canvas orthographic camera={{ zoom: 80, position: [0, 0, 10] }}>
+      <ambientLight intensity={0.8} />
+      <directionalLight position={[5, 5, 5]} intensity={0.5} />
+      <OrbitControls makeDefault />
+      {data.map((d, i) => {
+        const ratio = d[yKey] / total;
+        const angle = ratio * Math.PI * 2;
+        const mid = start + angle / 2;
+        const color = `hsl(${(i * 60) % 360},70%,60%)`;
+        const element = (
+          <mesh key={i} rotation={[Math.PI / 2, 0, mid]}>
+            <torusGeometry args={[4, 1, 16, 50, angle]} />
+            <meshStandardMaterial color={color} />
+          </mesh>
+        );
+        start += angle;
+        return element;
+      })}
+    </Canvas>
+  );
+};
+
+/* ──────────────────────────────────────────────────────────────── */
+/*  Main configurator component                                    */
+/* ──────────────────────────────────────────────────────────────── */
+export default function ChartConfigurator({ data }) {
+  const headers = Object.keys(data[0] || {});
+  const numericCols = headers.filter((h) => typeof data[0][h] === "number");
+
   const [xKey, setXKey] = useState(headers[0]);
   const [yKey, setYKey] = useState(numericCols[0] || headers[0]);
-  const [tab,  setTab]  = useState("Bar");
+  const [tab, setTab] = useState("Bar");
 
-  /* ───────────────────  refs  ───────────────────────── */
-  const svgWrapRef  = useRef(null);   // wrapper for Recharts
-  const plotRef     = useRef(null);   // react‑plotly ref
+  const svgWrapRef = useRef(null); // Recharts wrapper ref
+  const threeWrapRef = useRef(null); // Three.js canvas wrapper
 
-  /* ───────────────────  download  ───────────────────── */
+  /* ───────────────  Download handler  ─────────────── */
   const downloadPNG = async () => {
     try {
-      /* ---- Plotly path ---- */
+      /* 3‑D (Three.js) path */
       if (tab.startsWith("3D")) {
-        if (!plotRef.current) throw new Error("No Plotly ref");
-        await Plotly.downloadImage(plotRef.current, {
-          format: "png",
-          filename: `${yKey}_by_${xKey}`,
-          width: 900,
-          height: 600,
+        const canvas = threeWrapRef.current?.querySelector("canvas");
+        if (!canvas) throw new Error("canvas missing");
+        canvas.toBlob((blob) => {
+          if (blob) saveAs(blob, `${yKey}_by_${xKey}.png`);
         });
         toast.success("Chart saved!");
         return;
       }
 
-      /* ---- Recharts SVG path ---- */
+      /* 2‑D SVG path */
       const svg = svgWrapRef.current?.querySelector("svg");
-      if (!svg) throw new Error("SVG not found");
+      if (!svg) throw new Error("SVG missing");
       const blob = await domtoimage.toBlob(svg, { bgcolor: "#ffffff" });
       saveAs(blob, `${yKey}_by_${xKey}.png`);
       toast.success("Chart saved!");
     } catch (err) {
-      /* ---- fallback to html2canvas (handles CORS/foreignObject) ---- */
+      /* fallback */
       try {
-        const canvas = await html2canvas(svgWrapRef.current);
-        canvas.toBlob((blob) => {
-          if (blob) saveAs(blob, `${yKey}_by_${xKey}.png`);
-          toast.success("Chart saved!");
-        });
+        const target = tab.startsWith("3D") ? threeWrapRef.current : svgWrapRef.current;
+        const canvas = await html2canvas(target);
+        canvas.toBlob((blob) => blob && saveAs(blob, `${yKey}_by_${xKey}.png`));
+        toast.success("Chart saved!");
       } catch (e) {
-        console.error("Export failed:", e);
-        toast.error("Unable to export chart 😥");
+        console.error(e);
+        toast.error("Download failed ❌");
       }
     }
   };
 
-  /* ───────────────────  tab helper  ─────────────────── */
+  /* ───────────────  Tab button  ─────────────── */
   const tabBtn = (name) => (
     <button
       key={name}
       onClick={() => setTab(name)}
-      className={`px-4 py-2 rounded-t-md text-sm font-medium
-        ${tab===name
-          ? "bg-violet-600 text-white"
-          : "bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300"}`}
+      className={`px-4 py-2 rounded-t-md text-sm font-medium ${tab === name ? "bg-violet-600 text-white" : "bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300"}`}
     >
       {name}
     </button>
   );
 
-  /* ─────────────────── 2‑D charts  ─────────────────── */
+  /* ───────────────  Recharts (2‑D)  ─────────────── */
   const render2D = () => {
     if (tab === "Bar")
       return (
@@ -93,7 +134,6 @@ export default function ChartConfigurator({ data }) {
           </BarChart>
         </ResponsiveContainer>
       );
-
     if (tab === "Line")
       return (
         <ResponsiveContainer width="100%" height={350}>
@@ -105,7 +145,6 @@ export default function ChartConfigurator({ data }) {
           </LineChart>
         </ResponsiveContainer>
       );
-
     if (tab === "Pie" || tab === "Donut")
       return (
         <ResponsiveContainer width="100%" height={350}>
@@ -128,92 +167,53 @@ export default function ChartConfigurator({ data }) {
       );
   };
 
-  /* ─────────────────── 3‑D charts  ─────────────────── */
+  /* ───────────────  Three.js (true 3‑D)  ─────────────── */
   const render3D = () => {
     if (tab === "3D Column")
-      return (
-        <Plot
-          ref={plotRef}
-          data={[
-            {
-              type: "bar",
-              x: data.map(d => d[xKey]),
-              y: data.map(d => d[yKey]),
-              marker: { color: COLORS[0] },
-            },
-          ]}
-          layout={{
-            height: 400,
-            scene: { zaxis: { visible: false } },
-            margin: { l: 20, r: 20, b: 20, t: 30 },
-          }}
-          style={{ width: "100%" }}
-        />
-      );
-
+      return <ThreeBarChart data={data} xKey={xKey} yKey={yKey} />;
     if (tab === "3D Donut")
-      return (
-        <Plot
-          ref={plotRef}
-          data={[
-            {
-              type: "pie",
-              labels: data.map(d => d[xKey]),
-              values: data.map(d => d[yKey]),
-              hole: 0.5,
-            },
-          ]}
-          layout={{ height: 400, margin: { t: 30, b: 20 } }}
-          style={{ width: "100%" }}
-        />
-      );
+      return <ThreeDonutChart data={data} xKey={xKey} yKey={yKey} />;
   };
 
-  /* ───────────────────────  UI  ─────────────────────── */
+  /* ─────────────────────  UI  ───────────────────── */
   return (
     <div className="bg-white dark:bg-slate-800 rounded-xl shadow p-6 space-y-6">
-      {/* Config header */}
       <h3 className="text-xl font-bold">Chart Configuration</h3>
 
       {/* Axis selectors */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm mb-1">X‑Axis</label>
-          <select
-            value={xKey}
-            onChange={e => setXKey(e.target.value)}
-            className="w-full border px-3 py-2 rounded dark:bg-slate-700"
-          >
-            {headers.map(h => <option key={h}>{h}</option>)}
+          <select value={xKey} onChange={(e) => setXKey(e.target.value)} className="w-full border px-3 py-2 rounded dark:bg-slate-700">
+            {headers.map((h) => (
+              <option key={h}>{h}</option>
+            ))}
           </select>
         </div>
         <div>
           <label className="block text-sm mb-1">Y‑Axis</label>
-          <select
-            value={yKey}
-            onChange={e => setYKey(e.target.value)}
-            className="w-full border px-3 py-2 rounded dark:bg-slate-700"
-          >
-            {numericCols.map(h => <option key={h}>{h}</option>)}
+          <select value={yKey} onChange={(e) => setYKey(e.target.value)} className="w-full border px-3 py-2 rounded dark:bg-slate-700">
+            {numericCols.map((h) => (
+              <option key={h}>{h}</option>
+            ))}
           </select>
         </div>
       </div>
 
       {/* Tabs + download */}
       <div className="flex flex-wrap gap-1 mt-6">
-        {["Bar","Line","Pie","Donut","3D Column","3D Donut"].map(tabBtn)}
-        <button
-          onClick={downloadPNG}
-          className="ml-auto px-3 py-1 bg-violet-600 text-white rounded text-sm"
-        >
-          ⬇ Download PNG
+        {["Bar", "Line", "Pie", "Donut", "3D Column", "3D Donut"].map(tabBtn)}
+        <button onClick={downloadPNG} className="ml-auto px-3 py-1 bg-violet-600 text-white rounded text-sm">
+          ⬇ Download PNG
         </button>
       </div>
 
       {/* Chart output */}
-      <div ref={svgWrapRef} className="mt-6">
-        {["Bar","Line","Pie","Donut"].includes(tab) ? render2D() : render3D()}
-      </div>
+      {tab.startsWith("3D") ? (
+        <div ref={threeWrapRef} className="h-[400px] mt-6">{render3D()}</div>
+      ) : (
+        <div ref={svgWrapRef} className="mt-6">{render2D()}</div>
+      )}
     </div>
   );
 }
