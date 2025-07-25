@@ -37,9 +37,7 @@ const Dashboard = () => {
       // Safely extract types only if chart.type exists
       const uniqueTypes = [
         ...new Set(
-          chartData
-            .map((c) => c.type?.toLowerCase())
-            .filter((type) => type) // Remove undefined/null
+          chartData.map((c) => c.type?.toLowerCase()).filter((type) => type) // Remove undefined/null
         ),
       ];
       setChartTypes(uniqueTypes);
@@ -145,25 +143,25 @@ const Dashboard = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 h-42">
           <div
             onClick={() => navigate("/upload")}
-            className="cursor-pointer bg-white dark:bg-slate-800 p-6 rounded-2xl shadow text-center border-l-4 border-blue-500 hover:shadow-xl transition"
+            className="cursor-pointer bg-gradient-to-r from-blue-200 to-blue-400 dark:from-blue-800 dark:to-blue-600 p-6 rounded-2xl shadow text-center border-l-4 border-blue-500 hover:shadow-xl transition h-full"
           >
             <p className="text-xl font-semibold">📤 Upload Excel File</p>
-            <p className="text-sm text-gray-600 dark:text-gray-300">
+            <p className="text-sm text-gray-700 dark:text-gray-200">
               Import new data for analysis
             </p>
           </div>
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow text-center border-l-4 border-green-500">
+          <div className="bg-gradient-to-r from-green-200 to-green-400 dark:from-green-800 dark:to-green-600 p-6 rounded-2xl shadow text-center border-l-4 border-green-500 h-full">
             <p className="text-4xl font-bold">{chartTypes.length}</p>
-            <p className="text-sm text-gray-600 dark:text-gray-300">
+            <p className="text-sm text-gray-700 dark:text-gray-200">
               Different Chart Types
             </p>
           </div>
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow text-center border-l-4 border-purple-500">
+          <div className="bg-gradient-to-r from-purple-200 to-purple-400 dark:from-purple-800 dark:to-purple-600 p-6 rounded-2xl shadow text-center border-l-4 border-purple-500 h-full">
             <p className="text-4xl font-bold">{uploads.length}</p>
-            <p className="text-sm text-gray-600 dark:text-gray-300">
+            <p className="text-sm text-gray-700 dark:text-gray-200">
               Files Uploaded
             </p>
           </div>
@@ -186,7 +184,10 @@ const Dashboard = () => {
             <tbody>
               {uploads.length > 0 ? (
                 uploads.map((upload) => (
-                  <tr key={upload._id} className="border-b dark:border-slate-700">
+                  <tr
+                    key={upload._id}
+                    className="border-b dark:border-slate-700"
+                  >
                     <td className="py-3 px-6">{upload.fileName}</td>
                     <td className="py-3 px-6">
                       {new Date(upload.createdAt).toLocaleDateString()}
@@ -204,7 +205,10 @@ const Dashboard = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="4" className="py-4 px-6 text-center text-gray-500">
+                  <td
+                    colSpan="4"
+                    className="py-4 px-6 text-center text-gray-500"
+                  >
                     No uploads yet.
                   </td>
                 </tr>
@@ -230,10 +234,17 @@ const Dashboard = () => {
             <tbody>
               {charts.length > 0 ? (
                 charts.map((chart) => (
-                  <tr key={chart._id} className="border-b dark:border-slate-700">
+                  <tr
+                    key={chart._id}
+                    className="border-b dark:border-slate-700"
+                  >
                     <td className="py-3 px-6">{chart.title || "Untitled"}</td>
                     <td className="py-3 px-6">
-                      <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${getChartBadgeColor(chart.type)}`}>
+                      <span
+                        className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${getChartBadgeColor(
+                          chart.type
+                        )}`}
+                      >
                         {chart.type}
                       </span>
                     </td>
@@ -252,7 +263,10 @@ const Dashboard = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="4" className="py-4 px-6 text-center text-gray-500">
+                  <td
+                    colSpan="4"
+                    className="py-4 px-6 text-center text-gray-500"
+                  >
                     No charts yet.
                   </td>
                 </tr>

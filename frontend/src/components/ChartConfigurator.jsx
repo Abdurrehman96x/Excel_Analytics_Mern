@@ -257,7 +257,7 @@ export default function ChartConfigurator({ data }) {
               ⬇ Download PNG
             </button>
             <button onClick={saveChartToDB} className="px-4 py-2 bg-violet-600 text-white rounded">
-              📊 Create Chart
+              📊 Save Chart History
             </button>
           </div>
 

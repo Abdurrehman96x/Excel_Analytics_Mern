@@ -1,5 +1,3 @@
-// src/pages/UploadPage.jsx
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
@@ -27,7 +25,7 @@ const UploadPage = () => {
     if (!file) return;
 
     setFileName(file.name);
-    localStorage.setItem("uploadedFileName", file.name); // ✅ Save to localStorage
+    localStorage.setItem("uploadedFileName", file.name); 
     setShowCharts(false); // Hide charts on new upload
     setExcelData([]);     // Clear previous data
   };
@@ -89,7 +87,7 @@ const UploadPage = () => {
           <img
             src="/assets/excel_analytics_logo.png"
             alt="Logo"
-            className="w-14 h-14 sm:w-16 sm:h-16 dark:invert"
+            className="w-14 h-14 sm:w-16 sm:h-16"
           />
           <h1 className="text-2xl font-semibold">Excel Analytics</h1>
         </div>
@@ -110,6 +108,14 @@ const UploadPage = () => {
 
       {/* Main Content */}
       <main className="p-6 max-w-5xl mx-auto">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate("/dashboard")}
+          className="mb-4 px-4 py-2 bg-red-600 hover:bg-red-500 dark:bg-red-700 dark:hover:bg-red-600 text-white dark:text-white rounded transition"
+        >
+          ← Back to Dashboard
+        </button>
+
         <h2 className="text-3xl font-bold mb-6">📤 Upload Excel File</h2>
         <p className="text-gray-600 dark:text-gray-400 mb-6">
           Welcome, <span className="font-semibold">{userName}</span>. Upload a{" "}
