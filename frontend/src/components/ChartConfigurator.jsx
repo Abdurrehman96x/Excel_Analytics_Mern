@@ -1,4 +1,3 @@
-// src/components/ChartConfigurator.jsx (Three.js version)
 import { useState, useRef } from "react";
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie,
@@ -7,17 +6,14 @@ import {
 import domtoimage from "dom-to-image-more";
 import html2canvas from "html2canvas";
 import { saveAs } from "file-saver";
-import { toast } from "react-hot-toast";
-
-// Three‑js imports
+import { toast } from "react-toastify";
+import axios from "axios";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 
 const COLORS = ["#845ef7", "#5c7cfa", "#7950f2", "#9775fa", "#7048e8"];
 
-/* ──────────────────────────────────────────────────────────────── */
-/*  3‑D chart helpers                                              */
-/* ──────────────────────────────────────────────────────────────── */
+// --- 3D Bar Chart ---
 const ThreeBarChart = ({ data, xKey, yKey }) => {
   const gap = 1.2;
   const barW = 0.8;
@@ -36,6 +32,7 @@ const ThreeBarChart = ({ data, xKey, yKey }) => {
   );
 };
 
+// --- 3D Donut Chart ---
 const ThreeDonutChart = ({ data, xKey, yKey }) => {
   const total = data.reduce((s, d) => s + d[yKey], 0);
   let start = 0;
@@ -62,45 +59,46 @@ const ThreeDonutChart = ({ data, xKey, yKey }) => {
   );
 };
 
-/* ──────────────────────────────────────────────────────────────── */
-/*  Main configurator component                                    */
-/* ──────────────────────────────────────────────────────────────── */
 export default function ChartConfigurator({ data }) {
-  const headers = Object.keys(data[0] || {});
-  const numericCols = headers.filter((h) => typeof data[0][h] === "number");
+  const headers = data.length ? Object.keys(data[0]) : [];
+  const numericCols = headers.filter((h) => typeof data[0]?.[h] === "number");
 
-  const [xKey, setXKey] = useState(headers[0]);
-  const [yKey, setYKey] = useState(numericCols[0] || headers[0]);
-  const [tab, setTab] = useState("Bar");
+  const [xKey, setXKey] = useState("");
+  const [yKey, setYKey] = useState("");
+  const [chartType, setChartType] = useState("Bar");
+  const [showChart, setShowChart] = useState(false);
 
-  const svgWrapRef = useRef(null); // Recharts wrapper ref
-  const threeWrapRef = useRef(null); // Three.js canvas wrapper
+  const svgWrapRef = useRef(null);
+  const threeWrapRef = useRef(null);
 
-  /* ───────────────  Download handler  ─────────────── */
+  const handleGenerateChart = () => {
+    if (!xKey || !yKey) {
+      toast.error("Please select both X and Y axes!");
+      return;
+    }
+    setShowChart(true);
+  };
+
   const downloadPNG = async () => {
     try {
-      /* 3‑D (Three.js) path */
-      if (tab.startsWith("3D")) {
-        const canvas = threeWrapRef.current?.querySelector("canvas");
-        if (!canvas) throw new Error("canvas missing");
-        canvas.toBlob((blob) => {
-          if (blob) saveAs(blob, `${yKey}_by_${xKey}.png`);
-        });
-        toast.success("Chart saved!");
-        return;
-      }
+      const targetRef = chartType.startsWith("3D") ? threeWrapRef : svgWrapRef;
+      const canvas = targetRef.current?.querySelector("canvas");
+      const svg = targetRef.current?.querySelector("svg");
 
-      /* 2‑D SVG path */
-      const svg = svgWrapRef.current?.querySelector("svg");
-      if (!svg) throw new Error("SVG missing");
-      const blob = await domtoimage.toBlob(svg, { bgcolor: "#ffffff" });
-      saveAs(blob, `${yKey}_by_${xKey}.png`);
-      toast.success("Chart saved!");
+      if (canvas) {
+        canvas.toBlob((blob) => blob && saveAs(blob, `${yKey}_by_${xKey}.png`));
+        toast.success("Chart saved!");
+      } else if (svg) {
+        const blob = await domtoimage.toBlob(svg, { bgcolor: "#ffffff" });
+        saveAs(blob, `${yKey}_by_${xKey}.png`);
+        toast.success("Chart saved!");
+      } else {
+        throw new Error("Chart element missing.");
+      }
     } catch (err) {
-      /* fallback */
       try {
-        const target = tab.startsWith("3D") ? threeWrapRef.current : svgWrapRef.current;
-        const canvas = await html2canvas(target);
+        const fallback = chartType.startsWith("3D") ? threeWrapRef.current : svgWrapRef.current;
+        const canvas = await html2canvas(fallback);
         canvas.toBlob((blob) => blob && saveAs(blob, `${yKey}_by_${xKey}.png`));
         toast.success("Chart saved!");
       } catch (e) {
@@ -110,20 +108,36 @@ export default function ChartConfigurator({ data }) {
     }
   };
 
-  /* ───────────────  Tab button  ─────────────── */
-  const tabBtn = (name) => (
-    <button
-      key={name}
-      onClick={() => setTab(name)}
-      className={`px-4 py-2 rounded-t-md text-sm font-medium ${tab === name ? "bg-violet-600 text-white" : "bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300"}`}
-    >
-      {name}
-    </button>
-  );
+  const saveChartToDB = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const fileName = localStorage.getItem("uploadedFileName") || "Untitled";
 
-  /* ───────────────  Recharts (2‑D)  ─────────────── */
-  const render2D = () => {
-    if (tab === "Bar")
+      // ✅ Only sending title, type, and data — required by backend
+      await axios.post(
+        "http://localhost:5000/api/charts/create",
+        {
+          title: fileName,
+          type: chartType,
+          data,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      toast.success("Chart saved to history!");
+      localStorage.removeItem("uploadedFileName"); // optional cleanup
+    } catch (error) {
+      console.error(error);
+      toast.error("Error saving chart to DB");
+    }
+  };
+
+  const renderChart = () => {
+    if (!showChart) return null;
+
+    if (chartType === "Bar")
       return (
         <ResponsiveContainer width="100%" height={350}>
           <BarChart data={data}>
@@ -134,7 +148,8 @@ export default function ChartConfigurator({ data }) {
           </BarChart>
         </ResponsiveContainer>
       );
-    if (tab === "Line")
+
+    if (chartType === "Line")
       return (
         <ResponsiveContainer width="100%" height={350}>
           <LineChart data={data}>
@@ -145,7 +160,8 @@ export default function ChartConfigurator({ data }) {
           </LineChart>
         </ResponsiveContainer>
       );
-    if (tab === "Pie" || tab === "Donut")
+
+    if (chartType === "Pie" || chartType === "Donut")
       return (
         <ResponsiveContainer width="100%" height={350}>
           <PieChart>
@@ -153,7 +169,7 @@ export default function ChartConfigurator({ data }) {
               data={data}
               dataKey={yKey}
               nameKey={xKey}
-              innerRadius={tab === "Donut" ? 60 : 0}
+              innerRadius={chartType === "Donut" ? 60 : 0}
               outerRadius={110}
               label
             >
@@ -165,54 +181,90 @@ export default function ChartConfigurator({ data }) {
           </PieChart>
         </ResponsiveContainer>
       );
-  };
 
-  /* ───────────────  Three.js (true 3‑D)  ─────────────── */
-  const render3D = () => {
-    if (tab === "3D Column")
+    if (chartType === "3D Column")
       return <ThreeBarChart data={data} xKey={xKey} yKey={yKey} />;
-    if (tab === "3D Donut")
+
+    if (chartType === "3D Donut")
       return <ThreeDonutChart data={data} xKey={xKey} yKey={yKey} />;
   };
 
-  /* ─────────────────────  UI  ───────────────────── */
+  if (!headers.length) {
+    return <div className="text-red-600">No data available to generate chart.</div>;
+  }
+
   return (
     <div className="bg-white dark:bg-slate-800 rounded-xl shadow p-6 space-y-6">
-      <h3 className="text-xl font-bold">Chart Configuration</h3>
+      <h3 className="text-xl font-bold mb-4">📊 Generate Chart</h3>
 
-      {/* Axis selectors */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Selectors */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm mb-1">X‑Axis</label>
-          <select value={xKey} onChange={(e) => setXKey(e.target.value)} className="w-full border px-3 py-2 rounded dark:bg-slate-700">
+          <label className="block mb-1">X Axis</label>
+          <select
+            value={xKey}
+            onChange={(e) => setXKey(e.target.value)}
+            className="w-full border px-3 py-2 rounded dark:bg-slate-700"
+          >
+            <option value="">Select X</option>
             {headers.map((h) => (
-              <option key={h}>{h}</option>
+              <option key={h} value={h}>{h}</option>
             ))}
           </select>
         </div>
         <div>
-          <label className="block text-sm mb-1">Y‑Axis</label>
-          <select value={yKey} onChange={(e) => setYKey(e.target.value)} className="w-full border px-3 py-2 rounded dark:bg-slate-700">
+          <label className="block mb-1">Y Axis</label>
+          <select
+            value={yKey}
+            onChange={(e) => setYKey(e.target.value)}
+            className="w-full border px-3 py-2 rounded dark:bg-slate-700"
+          >
+            <option value="">Select Y</option>
             {numericCols.map((h) => (
-              <option key={h}>{h}</option>
+              <option key={h} value={h}>{h}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block mb-1">Chart Type</label>
+          <select
+            value={chartType}
+            onChange={(e) => setChartType(e.target.value)}
+            className="w-full border px-3 py-2 rounded dark:bg-slate-700"
+          >
+            {["Bar", "Line", "Pie", "Donut", "3D Column", "3D Donut"].map((t) => (
+              <option key={t} value={t}>{t}</option>
             ))}
           </select>
         </div>
       </div>
 
-      {/* Tabs + download */}
-      <div className="flex flex-wrap gap-1 mt-6">
-        {["Bar", "Line", "Pie", "Donut", "3D Column", "3D Donut"].map(tabBtn)}
-        <button onClick={downloadPNG} className="ml-auto px-3 py-1 bg-violet-600 text-white rounded text-sm">
-          ⬇ Download PNG
+      {/* Generate Button */}
+      <div className="mt-4">
+        <button
+          onClick={handleGenerateChart}
+          className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded shadow"
+        >
+          Generate Chart
         </button>
       </div>
 
-      {/* Chart output */}
-      {tab.startsWith("3D") ? (
-        <div ref={threeWrapRef} className="h-[400px] mt-6">{render3D()}</div>
-      ) : (
-        <div ref={svgWrapRef} className="mt-6">{render2D()}</div>
+      {/* Chart Display and Actions */}
+      {showChart && (
+        <>
+          <div className="flex gap-4 mt-4">
+            <button onClick={downloadPNG} className="px-4 py-2 bg-green-600 text-white rounded">
+              ⬇ Download PNG
+            </button>
+            <button onClick={saveChartToDB} className="px-4 py-2 bg-violet-600 text-white rounded">
+              📊 Create Chart
+            </button>
+          </div>
+
+          <div className="mt-6 h-[400px]" ref={chartType.startsWith("3D") ? threeWrapRef : svgWrapRef}>
+            {renderChart()}
+          </div>
+        </>
       )}
     </div>
   );

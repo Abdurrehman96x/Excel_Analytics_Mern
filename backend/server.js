@@ -7,6 +7,10 @@ const dotenv = require('dotenv');
 const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/admin');
 
+const chartRoutes = require("./routes/chartRoutes");
+const analyzeRoutes = require("./routes/analyzeRoutes");
+
+
 
 
 dotenv.config();
@@ -19,6 +23,8 @@ app.use(express.json()); // Parse JSON bodies
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/upload', require('./routes/upload'));
+app.use("/api/charts", chartRoutes);
+app.use("/api/analyze", analyzeRoutes);
 
 // Sample route
 app.get('/api/ping', (req, res) => {

@@ -1,3 +1,4 @@
+// middleware/auth.js
 const jwt = require("jsonwebtoken");
 
 const verifyToken = (req, res, next) => {
@@ -6,15 +7,16 @@ const verifyToken = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // contains id and role
+    req.user = decoded; // includes user ID and role
     next();
-  } catch {
+  } catch (err) {
+    console.error("Token verification failed:", err.message);
     res.status(403).json({ msg: "Invalid token." });
   }
 };
 
 const verifyAdmin = (req, res, next) => {
-  if (req.user.role === 'admin') return next();
+  if (req.user.role === "admin") return next();
   return res.status(403).json({ msg: "Admin access only." });
 };
 
