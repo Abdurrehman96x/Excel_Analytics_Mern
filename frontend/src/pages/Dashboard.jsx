@@ -176,7 +176,7 @@ const Dashboard = () => {
             <thead className="bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-200">
               <tr>
                 <th className="py-3 px-6">File Name</th>
-                <th className="py-3 px-6">Date Uploaded</th>
+                <th className="py-3 px-6">Created At</th>
                 <th className="py-3 px-6">Size</th>
                 <th className="py-3 px-6">Action</th>
               </tr>

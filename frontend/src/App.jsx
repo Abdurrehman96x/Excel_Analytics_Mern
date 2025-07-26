@@ -7,7 +7,6 @@ import AdminDashboard from "./pages/AdminDashboard";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AdminRoute from "./routes/AdminRoute";
 import NavigateToRoleDashboard from "./routes/NavigateToRoleDashboard"; // optional fallback
-import AdminUploads from "./pages/AdminUploads";
 import UploadPage from "./pages/UploadPage";
 
 function App() {
@@ -36,17 +35,6 @@ function App() {
           element={
             <AdminRoute>
               <AdminDashboard />
-            </AdminRoute>
-          }
-        />
-
-        {/* Optional: Redirect unknown routes based on user role */}
-        <Route path="*" element={<NavigateToRoleDashboard />} />
-        <Route
-          path="/admin/uploads"
-          element={
-            <AdminRoute>
-              <AdminUploads />
             </AdminRoute>
           }
         />
