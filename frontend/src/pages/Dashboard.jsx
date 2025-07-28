@@ -4,6 +4,7 @@ import ThemeToggle from "../components/ThemeToggle";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Github, Linkedin, Instagram } from "lucide-react";
 
 const Dashboard = () => {
   const [userName, setUserName] = useState("");
@@ -276,9 +277,41 @@ const Dashboard = () => {
         </div>
       </main>
 
-      <footer className="text-center text-xs text-gray-500 py-4 mt-10">
-        © 2025 Excel Analytics by Abdur Rehman Malik. All rights reserved.
+      <footer className="text-center text-m text-gray-500 py-6 mt-10 bg-white/30 dark:bg-white/5 border-t border-white/20">
+        <p>
+          © 2025 Excel Analytics by{" "}
+          <span className="font-semibold text-gray-700 dark:text-gray-200">
+            Abdur Rehman Malik
+          </span>
+        </p>
+        <div className="flex justify-center gap-4 mt-2">
+          <a
+            href="https://github.com/Abdurrehman96x"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-black dark:hover:text-white transition"
+          >
+            <Github size={25} />
+          </a>
+          <a
+            href="https://www.linkedin.com/in/abdur-rehman-malik-2a2b62239/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-blue-700 dark:hover:text-blue-400 transition"
+          >
+            <Linkedin size={25} />
+          </a>
+          <a
+            href="https://www.instagram.com/abdur.rehman96x_/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-pink-600 dark:hover:text-pink-400 transition"
+          >
+            <Instagram size={25} />
+          </a>
+        </div>
       </footer>
+      
     </div>
   );
 };

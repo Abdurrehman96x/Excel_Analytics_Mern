@@ -1,18 +1,17 @@
 import { Link } from "react-router-dom";
 import ThemeToggle from "../components/ThemeToggle";
-import ParticlesBackground from "../components/ParticlesBackground"; // ✅ import here
+import { Github, Linkedin, Instagram } from "lucide-react"; 
 
 const HomePage = () => {
   return (
-    <div className="relative min-h-screen overflow-hidden dark:text-white text-gray-900 transition-colors duration-300">
-      {/* ✅ Particle Background */}
-      <ParticlesBackground />
+    <div className="relative min-h-screen overflow-hidden dark:text-white text-gray-900 transition-colors duration-300 flex flex-col">
+      {/* ✅ Animated Background (Gradient Waves) */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-green-200 via-green-300 to-blue-300 dark:from-gray-700 dark:via-gray-600 dark:to-indigo-500 animate-background"></div>
+      </div>
 
-      {/* ✅ Optional Gradient Layer */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-100 via-white to-purple-100 dark:from-gray-900 dark:via-gray-800 dark:to-indigo-900 z-0"></div>
-
-      {/* ✅ Theme Toggle + Hero Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4">
+      {/* ✅ Hero Content */}
+      <div className="relative z-10 flex-grow flex flex-col items-center justify-center px-4">
         <div className="absolute top-4 right-4">
           <ThemeToggle />
         </div>
@@ -21,7 +20,7 @@ const HomePage = () => {
           <img
             src="/assets/excel_analytics_logo.png"
             alt="Excel Analytics Logo"
-            className="w-36 h-36 sm:w-40 sm:h-40 mx-auto  drop-shadow-lg"
+            className="w-36 h-36 sm:w-40 sm:h-40 mx-auto drop-shadow-lg"
           />
           <h1 className="text-4xl sm:text-5xl font-extrabold leading-tight">
             Excel Analytics Platform
@@ -46,6 +45,42 @@ const HomePage = () => {
           </div>
         </div>
       </div>
+
+      {/* ✅ Footer */}
+      <footer className="relative z-10 text-center text-sm text-gray-600 dark:text-gray-300 py-6 bg-white/30 dark:bg-white/5 border-t border-white/20">
+        <p>
+          © 2025 Excel Analytics by{" "}
+          <span className="font-semibold text-gray-800 dark:text-white">
+            Abdur Rehman Malik
+          </span>
+        </p>
+        <div className="flex justify-center gap-4 mt-2">
+          <a
+            href="https://github.com/abdurmalikdev"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-black dark:hover:text-white transition"
+          >
+            <Github size={20} />
+          </a>
+          <a
+            href="https://linkedin.com/in/abdurmalikdev"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-blue-700 dark:hover:text-blue-400 transition"
+          >
+            <Linkedin size={20} />
+          </a>
+          <a
+            href="https://instagram.com/abdurmalikdev"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-pink-600 dark:hover:text-pink-400 transition"
+          >
+            <Instagram size={20} />
+          </a>
+        </div>
+      </footer>
     </div>
   );
 };

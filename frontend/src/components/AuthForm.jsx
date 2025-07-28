@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import toast from 'react-hot-toast'; 
 
 const AuthForm = ({ type = 'login', onSubmit }) => {
   const [formData, setFormData] = useState({ email: '', password: '', name: '' });
@@ -7,8 +8,19 @@ const AuthForm = ({ type = 'login', onSubmit }) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  const validatePassword = (password) => {
+    const strongPasswordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    return strongPasswordRegex.test(password);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (type === 'register' && !validatePassword(formData.password)) {
+      toast.error("Password must be at least 8 characters, include a number and a symbol.");
+      return;
+    }
+
     onSubmit(formData);
   };
 
@@ -40,6 +52,7 @@ const AuthForm = ({ type = 'login', onSubmit }) => {
         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-slate-800 dark:text-white"
         required
       />
+
       <input
         type="password"
         name="password"
@@ -48,6 +61,12 @@ const AuthForm = ({ type = 'login', onSubmit }) => {
         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-slate-800 dark:text-white"
         required
       />
+
+      {type === 'register' && (
+        <p className="text-xs text-gray-500 dark:text-gray-300">
+          Password must be at least 8 characters and include a number and a special symbol.
+        </p>
+      )}
 
       <button
         type="submit"

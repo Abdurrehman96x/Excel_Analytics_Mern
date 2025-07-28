@@ -6,7 +6,7 @@ import {
 import domtoimage from "dom-to-image-more";
 import html2canvas from "html2canvas";
 import { saveAs } from "file-saver";
-import { toast } from "react-toastify";
+import toast from "react-hot-toast";
 import axios from "axios";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
@@ -127,7 +127,7 @@ export default function ChartConfigurator({ data }) {
       );
 
       toast.success("Chart saved to history!");
-      localStorage.removeItem("uploadedFileName"); // optional cleanup
+      localStorage.removeItem("uploadedFileName"); 
     } catch (error) {
       console.error(error);
       toast.error("Error saving chart to DB");
