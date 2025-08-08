@@ -23,7 +23,7 @@ router.post("/json", verifyToken, async (req, res) => {
   }
 });
 
-// 📊 Save chart manually (for "Create Chart" button)
+// save chart manually (for "Create Chart" button)
 router.post("/chart", verifyToken, async (req, res) => {
   try {
     const { fileName, analysisSummary, rawData } = req.body;
@@ -45,7 +45,7 @@ router.post("/chart", verifyToken, async (req, res) => {
   }
 });
 
-// 📄 Fetch upload history
+//  Fetch upload history
 router.get("/history", verifyToken, async (req, res) => {
   try {
     const uploads = await Upload.find({ user: req.user.id }).sort({ createdAt: -1 });
@@ -57,7 +57,7 @@ router.get("/history", verifyToken, async (req, res) => {
 });
 
 
-// 🗑️ Delete an upload by ID
+// Delete an upload by ID
 router.delete("/:id", verifyToken, async (req, res) => {
   try {
     const upload = await Upload.findById(req.params.id);

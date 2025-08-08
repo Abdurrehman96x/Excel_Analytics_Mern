@@ -42,7 +42,7 @@ exports.getUserChartTypes = async (req, res) => {
   }
 };
 
-// Optional: Get all charts for current user
+// Get all charts for current user
 exports.getChartsByUser = async (req, res) => {
   try {
     const userId = req.user.id;

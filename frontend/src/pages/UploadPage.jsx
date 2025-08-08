@@ -50,7 +50,7 @@ const UploadPage = () => {
         const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
         const response = await axios.post(
-          "http://localhost:5000/api/upload/json",
+          `${import.meta.env.VITE_API_BASE_URL}/api/upload/json`,
           {
             fileName: file.name,
             size: (file.size / 1024).toFixed(2) + " KB",

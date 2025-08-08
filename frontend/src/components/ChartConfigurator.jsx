@@ -115,7 +115,7 @@ export default function ChartConfigurator({ data }) {
 
       // ✅ Only sending title, type, and data — required by backend
       await axios.post(
-        "http://localhost:5000/api/charts/create",
+        `${import.meta.env.VITE_API_BASE_URL}/api/charts/create`,
         {
           title: fileName,
           type: chartType,

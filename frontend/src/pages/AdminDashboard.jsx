@@ -23,13 +23,13 @@ const AdminDashboard = () => {
       const token = localStorage.getItem("token");
       try {
         const [userRes, uploadRes, chartRes] = await Promise.all([
-          axios.get("http://localhost:5000/api/admin/users", {
+          axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/admin/users`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get("http://localhost:5000/api/admin/uploads", {
+          axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/admin/uploads`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get("http://localhost:5000/api/admin/charts", {
+          axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/admin/charts`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
@@ -70,7 +70,7 @@ const AdminDashboard = () => {
 
     try {
       await axios.delete(
-        `http://localhost:5000/api/admin/user/${selectedUser._id}`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/admin/user/${selectedUser._id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }

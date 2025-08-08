@@ -17,7 +17,7 @@ const UploadForm = ({ onUpload }) => {
     setLoading(true);
 
     try {
-      await axios.post("http://localhost:5000/api/upload", formData, {
+      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/upload`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",

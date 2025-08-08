@@ -3,7 +3,7 @@ const router = express.Router();
 const Chart = require("../models/Chart");
 const { verifyToken } = require("../middleware/auth");
 
-// ✅ Create a new chart
+//  Create a new chart
 router.post("/create", verifyToken, async (req, res) => {
   try {
     const { title, type, data } = req.body;
@@ -28,7 +28,7 @@ router.post("/create", verifyToken, async (req, res) => {
   }
 });
 
-// ✅ Get all charts for logged-in user
+// Get all charts for logged-in user
 router.get("/user", verifyToken, async (req, res) => {
   try {
     const userId = req.user?.id || req.userId;
@@ -39,7 +39,7 @@ router.get("/user", verifyToken, async (req, res) => {
   }
 });
 
-// ✅ Delete a chart by ID
+// Delete a chart by ID
 router.delete("/:id", verifyToken, async (req, res) => {
   try {
     await Chart.findByIdAndDelete(req.params.id);
@@ -49,7 +49,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
   }
 });
 
-// ✅ Count distinct chart types created by user
+//  Count distinct chart types created by user
 router.get("/count", verifyToken, async (req, res) => {
   try {
     const userId = req.user?.id || req.userId;
@@ -61,7 +61,7 @@ router.get("/count", verifyToken, async (req, res) => {
   }
 });
 
-// ✅ Chart types with count summary for user dashboard
+// Chart types with count summary for user dashboard
 router.get("/types-summary", verifyToken, async (req, res) => {
   try {
     const userId = req.user?.id || req.userId;

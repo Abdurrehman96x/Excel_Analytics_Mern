@@ -17,7 +17,7 @@ const Dashboard = () => {
 
   const fetchUploads = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/upload/history", {
+      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/upload/history`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUploads(Array.isArray(res.data) ? res.data : []);
@@ -29,7 +29,7 @@ const Dashboard = () => {
 
   const fetchCharts = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/charts/user", {
+      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/charts/user`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const chartData = Array.isArray(res.data) ? res.data : [];
@@ -51,7 +51,7 @@ const Dashboard = () => {
 
   const handleDeleteUpload = async (uploadId) => {
     try {
-      await axios.delete(`http://localhost:5000/api/upload/${uploadId}`, {
+      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/upload/${uploadId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       toast.success("Upload deleted successfully");
@@ -64,7 +64,7 @@ const Dashboard = () => {
 
   const handleDeleteChart = async (chartId) => {
     try {
-      await axios.delete(`http://localhost:5000/api/charts/${chartId}`, {
+      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/charts/${chartId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       toast.success("Chart deleted successfully");

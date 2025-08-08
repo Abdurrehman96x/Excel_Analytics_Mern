@@ -2,10 +2,10 @@ const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
 const Upload = require("../models/Upload");
-const Chart = require("../models/Chart"); // Assuming you have a Chart model
+const Chart = require("../models/Chart"); 
 const { verifyToken, verifyAdmin } = require("../middleware/auth");
 
-// ✅ 1. Get all users (admin only)
+//  Get all users (admin only)
 router.get("/users", verifyToken, verifyAdmin, async (req, res) => {
   try {
     const users = await User.find({}, "-passwordHash"); // Exclude password
@@ -16,7 +16,7 @@ router.get("/users", verifyToken, verifyAdmin, async (req, res) => {
   }
 });
 
-// ✅ 2. Get all uploads (admin only)
+// Get all uploads (admin only)
 router.get("/uploads", verifyToken, verifyAdmin, async (req, res) => {
   try {
     const uploads = await Upload.find({})
@@ -29,7 +29,7 @@ router.get("/uploads", verifyToken, verifyAdmin, async (req, res) => {
   }
 });
 
-// ✅ 3. Get all charts (admin only)
+//  Get all charts (admin only)
 router.get("/charts", verifyToken, verifyAdmin, async (req, res) => {
   try {
     const charts = await Chart.find({})
@@ -42,7 +42,7 @@ router.get("/charts", verifyToken, verifyAdmin, async (req, res) => {
   }
 });
 
-// ✅ 4. Delete a user (admin only)
+// Delete a user (admin only)
 router.delete("/user/:id", verifyToken, verifyAdmin, async (req, res) => {
   try {
     const userId = req.params.id;

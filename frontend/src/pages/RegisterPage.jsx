@@ -9,7 +9,7 @@ const RegisterPage = () => {
 
   const handleRegister = async ({ name, email, password }) => {
     try {
-      await axios.post('http://localhost:5000/api/auth/register', { name, email, password });
+      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/auth/register`, { name, email, password });
       toast.success('Registered successfully! Please login.');
       navigate('/login');
     } catch (err) {
